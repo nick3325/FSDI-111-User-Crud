@@ -1,57 +1,12 @@
-from datetime import datetime
-from app.database import user
-from flask import (
-    Flask,
-    request
-)
+from flask import Flask, render_template
+import requests
+
 
 app = Flask(__name__)
-VERSION = "1.0.0"
-@app.get("/ping")
-def ping():
-    resp = {
-        "status": "ok",
-        "message": "success"
-    }
-    return resp
+BACKEND_URL = "http://127.0.0.1:5001"
 
-@app.get("/version")
-def version():
-    resp = {
-        "status": "ok",
-        "message": "success",
-        "version": VERSION,
-        "server_time": datetime.now().strftime("%F %H:%M:%S")
-    }
-    return resp 
-
-@app.get("/users/<int:pk>")
-def get_user_by_id(pk):
-    target_user = user.select_by_id(pk)
-    resp = {
-        "status": "ok",
-        "message": "success",
-        "user": target_user
-    }
-    return resp
-
-@app.get("/users/")
-def get_all_users():
-    user_list = user.scan()
-    resp = {
-        "status": "ok",
-        "message": "success",
-        "user": user_list
-    }
-    return resp
-
-@app.post("/users/")
-def create_user():
-    user_data = request.json
-    user.insert(user_data)
-    return "", 204
-
-@app.delete("/users/<int:pk>")
-def deactivate_user(pk):
-    user.deactivate(pk)
-    return "", 204
+@app.get("/")
+def view_report():
+    url = "%s%s" % (BACKEND_URL, "/reports/user/vehicles")
+    report_data = requests.get(url)
+    return render_template("index.html", results=report_data)
